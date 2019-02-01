@@ -166,6 +166,8 @@ def train(args, net, optimizer, criterion, scheduler):
                                  AnnotationTransform(), input_type=args.input_type,
                                  full_test=False)
     epoch_size = len(train_dataset) // args.batch_size
+    print('len(train_dataset) : ', len(train_dataset))
+    print('epoch_size : ', epoch_size); exit()
     print('Training SSD on', train_dataset.name)
 
     if args.visdom:

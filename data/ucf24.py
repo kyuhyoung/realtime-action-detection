@@ -70,6 +70,7 @@ def make_lists(rootpath, imgtype, split=1, fulltest=False):
     imagesDir = rootpath + imgtype + '/'
     splitfile = rootpath + 'splitfiles/trainlist{:02d}.txt'.format(split)
     trainvideos = readsplitfile(splitfile)
+    #print('trainvideos : ', trainvideos)
     trainlist = []
     testlist = []
 
@@ -85,8 +86,10 @@ def make_lists(rootpath, imgtype, split=1, fulltest=False):
     #ratios = np.ones_like(ratios) #TODO:uncomment this line and line 155, 156 to compute new ratios might be useful for JHMDB21
     video_list = []
     for vid, videoname in enumerate(sorted(database.keys())):
+        #print('videoname : ', videoname);  # exit()
         video_list.append(videoname)
         actidx = database[videoname]['label']
+        #print('actidx : {}, vid : {}'.format(actidx, vid));  # exit()
         istrain = True
         step = ratios[actidx]
         numf = database[videoname]['numf']
@@ -99,6 +102,10 @@ def make_lists(rootpath, imgtype, split=1, fulltest=False):
             lastf = numf
 
         annotations = database[videoname]['annotations']
+        #print('type(annotations[0]) : ', type(annotations[0]));  exit()
+        #print('len(annotations) : ', len(annotations));   exit()
+        #print('annotations : ', annotations);  # exit()
+        #print('annotations[0][boxes].shape : ', annotations[0]['boxes'].shape);   exit()
         num_tubes = len(annotations)
 
         tube_labels = np.zeros((numf,num_tubes),dtype=np.int16) # check for each tube if present in
@@ -107,6 +114,7 @@ def make_lists(rootpath, imgtype, split=1, fulltest=False):
             # print('numf00', numf, tube['sf'], tube['ef'])
             for frame_id, frame_num in enumerate(np.arange(tube['sf'], tube['ef'], 1)): # start of the tube to end frame of the tube
                 label = tube['label']
+                #print('label : ', label);    exit()
                 assert actidx == label, 'Tube label and video label should be same'
                 box = tube['boxes'][frame_id, :]  # get the box as an array
                 box = box.astype(np.float32)
@@ -116,10 +124,12 @@ def make_lists(rootpath, imgtype, split=1, fulltest=False):
                 tube_boxes[frame_num][tubeid] = box  # put the box in matrix of lists
 
         possible_frame_nums = np.arange(0, lastf, step)
-        # print('numf',numf,possible_frame_nums[-1])
+        #print('numf', numf, possible_frame_nums[-1])
+        #print('possible_frame_nums : ', possible_frame_nums);    exit()
         for frame_num in possible_frame_nums: # loop from start to last possible frame which can make a legit sequence
             frame_num = int(frame_num)
             check_tubes = tube_labels[frame_num,:]
+            #print('frame_num : {} / {}, np.sum(check_tubes) : {}'.format(frame_num, lastf, np.sum(check_tubes)));   # exit()
 
             if np.sum(check_tubes)>0:  # check if there aren't any semi overlapping tubes
                 all_boxes = []
@@ -141,8 +151,9 @@ def make_lists(rootpath, imgtype, split=1, fulltest=False):
                     testlist.append([vid, frame_num+1, np.asarray(labels), np.asarray(all_boxes)])
                     test_action_counts[actidx] += 1 #len(labels)
             elif fulltest and not istrain: # if test video with no ground truth and fulltest is trues
+                #print('labels : ', labels); print('all_boxes : ', all_boxes);   exit()
                 testlist.append([vid, frame_num+1, np.asarray([9999]), np.zeros((1,4))])
-
+        #print();    exit()
     for actidx, act_count in enumerate(train_action_counts): # just to see the distribution of train and test sets
         print('train {:05d} test {:05d} action {:02d} {:s}'.format(act_count, test_action_counts[actidx] , int(actidx), CLASSES[actidx]))
 
@@ -152,7 +163,7 @@ def make_lists(rootpath, imgtype, split=1, fulltest=False):
     for r in newratios:
         line +='{:0.2f}, '.format(r)
     print(line+']')
-    print('Trainlistlen', len(trainlist), ' testlist ', len(testlist))
+    print('len(trainlist)', len(trainlist), ', len(testlist) : ', len(testlist))
 
     return trainlist, testlist, video_list
 
@@ -196,24 +207,39 @@ class UCF24Detection(data.Dataset):
 
     def pull_item(self, index):
         annot_info = self.ids[index]
+        #print('type(annot_info) : ', type(annot_info))
         frame_num = annot_info[1]
         video_id = annot_info[0]
         videoname = self.video_list[video_id]
         img_name = self._imgpath + '/{:s}/{:05d}.jpg'.format(videoname, frame_num)
         # print(img_name)
-        img = cv2.imread(img_name)
-        height, width, channels = img.shape
-
+        img_bgr = cv2.imread(img_name)
+        height, width, channels = img_bgr.shape
+        #   if it is fulltest and no ground truth is given, annot_info[2](=label) is [9999] and annot_info[3](=bbox info) is [0, 0, 0, 0]
+        '''
+        print('annot_info[2] : ', annot_info[2])
+        print('annot_info[3] : ', annot_info[3]);    exit()
+        ''' 
         target = self.target_transform(annot_info[3], annot_info[2], width, height)
 
         if self.transform is not None:
             target = np.array(target)
-            img, boxes, labels = self.transform(img, target[:, :4], target[:, 4])
-            img = img[:, :, (2, 1, 0)]
+            v_min_b4 = np.amin(img_bgr);    v_max_b4 = np.amax(img_bgr) 
+            img_bgr, boxes, labels = self.transform(img_bgr, target[:, :4], target[:, 4])
+            '''
+            v_min_after = np.amin(img);    v_max_after = np.amax(img) 
+            print('target[:, :4] : {}, target[:, 4] : {}'.format(target[:, :4], target[:, 4]))
+            print('v_min_b4 : {}, v_max_b4 : {}'.format(v_min_b4, v_max_b4))
+            print('v_min_after : {}, v_max_after : {}'.format(v_min_after, v_max_after))
+            exit()
+            '''
+            img_rgb = img_bgr[:, :, (2, 1, 0)]
             # img = img.transpose(2, 0, 1)
             target = np.hstack((boxes, np.expand_dims(labels, axis=1)))
+        else:
+            img_rgb = img_bgr
         # print(height, width,target)
-        return torch.from_numpy(img).permute(2, 0, 1), target, index
+        return torch.from_numpy(img_rgb).permute(2, 0, 1), target, index    # from w-h-c to c-w-h
         # return torch.from_numpy(img), target, height, width
 
 
@@ -229,10 +255,13 @@ def detection_collate(batch):
     """
 
     targets = []
-    imgs = []
+    imgs_rgb = []
     image_ids = []
     for sample in batch:
-        imgs.append(sample[0])
+        imgs_rgb.append(sample[0])
+        #print('sample[0] : ', sample[0]);# exit()
+        #print('ground truth box and label : ', sample[1]);# exit()
+        #print('image ID : ', sample[2]); #exit()
         targets.append(torch.FloatTensor(sample[1]))
         image_ids.append(sample[2])
-    return torch.stack(imgs, 0), targets, image_ids
+    return torch.stack(imgs_rgb, 0), targets, image_ids

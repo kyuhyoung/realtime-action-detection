@@ -191,13 +191,18 @@ def nms(boxes, scores, overlap=0.5, top_k=200):
 
     keep = scores.new(scores.size(0)).zero_().long()
     if boxes.numel() == 0:
-        return keep
+        print("boxes.numel() == 0")
+        print("keep", keep)
+        return keep, -1
     x1 = boxes[:, 0]
     y1 = boxes[:, 1]
     x2 = boxes[:, 2]
     y2 = boxes[:, 3]
-    area = torch.mul(x2 - x1, y2 - y1)
+    area = torch.abs(torch.mul(x2 - x1, y2 - y1))
+    #print('area : ', area);  
+    #print('scores : ', scores);  
     v, idx = scores.sort(0)  # sort in ascending order
+    #print('scores after sort : ', scores);  exit()
     # I = I[v >= 0.01]
     idx = idx[-top_k:]  # indices of the top-k largest vals
     xx1 = boxes.new()

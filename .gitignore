@@ -4,3 +4,6 @@
 *.pyo
 __pycache__/
 .idea/
+*.avi
+bbox_video
+ucf24/
