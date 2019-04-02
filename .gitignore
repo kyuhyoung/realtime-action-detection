@@ -1,9 +1,9 @@
-
 *.log
 *.pyc
 *.pyo
 __pycache__/
-.idea/
-*.avi
-bbox_video
+.idea
+bbox_video/
 ucf24/
+*.avi
+*.gif

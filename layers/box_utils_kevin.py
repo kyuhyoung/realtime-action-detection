@@ -188,24 +188,24 @@ def nms(boxes, scores, overlap=0.5, top_k=200):
     Return:
         The indices of the kept boxes with respect to num_priors.
     """
-    #print('type(scores) : ', type(scores))         #   <class 'torch.cuda.FloatTensor'> 
-    #print('scores.size() : ', scores.size())       #   torch.Size([16])
-    #print('scores : ', scores)                       #   unsorted scores bigger than conf_thres (default 0.01) 
-    keep = scores.new(scores.size(0)).zero_().long()#   vector of zeros for # of scores     
-    #print('boxes : ', boxes)                 
-    if boxes.numel() == 0:                          #   if there is no bboxes whose score is large enough
-        return keep                                 #   return the vector of zeros. 
-    x1 = boxes[:, 0]                                #   normalized upper-left and right-bottom corners of bboxes
+
+    keep = scores.new(scores.size(0)).zero_().long()
+    if boxes.numel() == 0:
+        print("boxes.numel() == 0")
+        print("keep", keep)
+        return keep, -1
+    x1 = boxes[:, 0]
     y1 = boxes[:, 1]
     x2 = boxes[:, 2]
     y2 = boxes[:, 3]
-    area = torch.mul(x2 - x1, y2 - y1)              #   area of bboxes
-    v, idx = scores.sort(0)                         #   sort in ascending order
-    #print('v : ', v);   print('idx : ', idx);   exit()
+    area = torch.abs(torch.mul(x2 - x1, y2 - y1))
+    #print('area : ', area);  
+    #print('scores : ', scores);  
+    v, idx = scores.sort(0)  # sort in ascending order
+    #print('scores after sort : ', scores);  exit()
     # I = I[v >= 0.01]
-    idx = idx[-top_k:]                              # indices of the top-k largest vals for this class
-    xx1 = boxes.new()                               #   make dummy tensors of the same type as that of boxes
-    #print('type(xx1) : ', type(xx1));   print('xx1 : ', xx1);   exit()
+    idx = idx[-top_k:]  # indices of the top-k largest vals
+    xx1 = boxes.new()
     yy1 = boxes.new()
     xx2 = boxes.new()
     yy2 = boxes.new()
@@ -215,20 +215,20 @@ def nms(boxes, scores, overlap=0.5, top_k=200):
     # keep = torch.Tensor()
     count = 0
     while idx.numel() > 0:
-        i = idx[-1]             # index of current largest score value since it is sorted ascending order.
+        i = idx[-1]  # index of current largest val
         # keep.append(i)
-        keep[count] = i         # append the current best index to keep
+        keep[count] = i
         count += 1
-        if idx.size(0) == 1:    #   if this is the last index remained
-            break               #   go out
-        idx = idx[:-1]          # remove kept element from view. Get the rest of indices except the current best one.
+        if idx.size(0) == 1:
+            break
+        idx = idx[:-1]  # remove kept element from view
         # load bboxes of next highest vals
-        torch.index_select(x1, 0, idx, out=xx1) #   copy the bboxes from x1 to xx1  except the current best one of this class  
+        torch.index_select(x1, 0, idx, out=xx1)
         torch.index_select(y1, 0, idx, out=yy1)
         torch.index_select(x2, 0, idx, out=xx2)
         torch.index_select(y2, 0, idx, out=yy2)
         # store element-wise max with next highest score
-        xx1 = torch.clamp(xx1, min=x1[i])       #   find the overlapping regions of the rest bboxes with the current best one of this class.   
+        xx1 = torch.clamp(xx1, min=x1[i])
         yy1 = torch.clamp(yy1, min=y1[i])
         xx2 = torch.clamp(xx2, max=x2[i])
         yy2 = torch.clamp(yy2, max=y2[i])
@@ -239,11 +239,11 @@ def nms(boxes, scores, overlap=0.5, top_k=200):
         # check sizes of xx1 and xx2.. after each iteration
         w = torch.clamp(w, min=0.0)
         h = torch.clamp(h, min=0.0)
-        inter = w * h                           #   Compute the areas of intersections between the current best one and the rest bboxes.
+        inter = w*h
         # IoU = i / (area(a) + area(b) - i)
-        rem_areas = torch.index_select(area, 0, idx)  # load remaining areas
-        union = (rem_areas - inter) + area[i]           #   area of union is (area of the current best + area of interset - intersection) 
+        rem_areas = torch.index_select(area, 0, idx)  # load remaining areas)
+        union = (rem_areas - inter) + area[i]
         IoU = inter/union  # store result in iou
         # keep only elements with an IoU <= overlap
-        idx = idx[IoU.le(overlap)]          #   Take bboxes which do not overlap enough with the current best to the next round.    
+        idx = idx[IoU.le(overlap)]
     return keep, count
