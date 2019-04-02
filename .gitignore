@@ -7,3 +7,4 @@ bbox_video/
 ucf24/
 *.avi
 *.gif
+*.pth
