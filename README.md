@@ -28,7 +28,7 @@ The command line script for GPU + cam version was
 # Under the assmuption that 'ucf24' folder exists in this directory and the the camera index is 0. 
 $ python test-ucf24.py --id_cam=0
 ```
-  * The typical result of camera version is as the following figure.
+  * The typical result of camera version is as the following figure which shows that the fps on Titan X (Pascal) is around 85. (I shoul have checked how it would change when a network for optical flow is added.)
   
   ![fps_gpu](./img/cam_gpu.PNG)
 
