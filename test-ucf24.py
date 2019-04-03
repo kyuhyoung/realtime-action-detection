@@ -76,7 +76,8 @@ parser.add_argument('--save_root', default='./', help='Location to save checkpoi
 parser.add_argument('--iou_thresh', default=0.5, type=float, help='Evaluation threshold')
 
 #parser.add_argument('--conf_thresh', default=0.01, type=float, help='Confidence threshold for evaluation')
-parser.add_argument('--conf_thresh', default=0.05, type=float, help='Confidence threshold for evaluation')
+#parser.add_argument('--conf_thresh', default=0.05, type=float, help='Confidence threshold for evaluation')
+parser.add_argument('--conf_thresh', default=0.2, type=float, help='Confidence threshold for evaluation')
 
 #parser.add_argument('--nms_thresh', default=0.45, type=float, help='NMS threshold')
 parser.add_argument('--nms_thresh', default=0.5, type=float, help='NMS threshold')
@@ -266,6 +267,9 @@ def test_net(net, save_root, exp_name, input_type, dataset, iteration, li_color_
             #cv2.putText(t3_bgr, video_name, (60, 20), cv2.FONT_HERSHEY_DUPLEX, 0.6, (0, 0, 255))
             id_vid = dataset.CLASSES.index(video_name)
             cv2.putText(t3_bgr, video_name, (X_OFFSET_GT_VID, Y_OFFSET_GT_VID), cv2.FONT_HERSHEY_DUPLEX, FONT_SCALE_GT_VID, li_color_class[id_vid])
+            
+            cv2.putText(t3_bgr, "conf. thres. : {:.2f}".format(th_conf), (int(width * 0.5 - 85), int(height - 10)), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 255))
+            
             if not shall_record:
                 t3_bgr = mark_ground_truth(t3_bgr, gt, dataset.CLASSES, li_color_class)
             gt_boxes.append(gt)

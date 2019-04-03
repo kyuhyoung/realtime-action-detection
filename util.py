@@ -30,9 +30,9 @@ import time
 
 
 Y_OFFSET_GT_BOX = 15
-Y_OFFSET_DET_SCORE = 10
+Y_OFFSET_DET_SCORE = 14
 
-FONT_SCALE_DET_BOX = 0.6 
+FONT_SCALE_DET_BOX = 0.5 
 FONT_SCALE_CONFIDIENCE = 0.7 
 
 class DataClass(object):
@@ -397,7 +397,7 @@ def display_in_thread(class_data_proxy, shall_record, w_h_cam, w_h_net, tu_str_c
         #print('AAA det')
         '''
 
-        cv2.putText(im_bgr, "conf. thres. : {:.2f}".format(th_conf), (int(wid * 0.5 - 80), int(hei * 0.07)), cv2.FONT_HERSHEY_SIMPLEX, FONT_SCALE_CONFIDIENCE, (0, 255, 0))
+        cv2.putText(im_bgr, "conf. thres. : {:.2f}".format(th_conf), (int(wid * 0.5 - 85), int(hei * 0.07)), cv2.FONT_HERSHEY_SIMPLEX, FONT_SCALE_CONFIDIENCE, (0, 255, 0))
 
         fps_det = class_data_proxy.get_fps_det()
         if fps_det:
