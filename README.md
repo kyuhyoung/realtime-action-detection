@@ -1,4 +1,40 @@
 # Real-time online Action Detection: ROAD
+---
+## kyuhyoung's README
+Camera version of gurkirt's realtime action detection codes (just with RGB image w/o optical flow).
+
+My environmnet was
+
+  * Python : 3.5.3
+
+  * PyTroch : 0.3.0.post4
+
+  * cv2 : 3.2.0
+  
+  * Titax X (Pascal)  
+
+The command line script for GPU + still image version was
+```Shell
+# Under the assmuption that 'ucf24' folder should exist in this directory. 
+$ python test-ucf24.py
+```
+  * The typical result of still image version is as the following figure.
+  
+  ![fps_gpu](./img/still_gpu.PNG)
+
+
+The command line script for GPU + cam version was
+```Shell
+# Under the assmuption that 'ucf24' folder should exist in this directory and the the camera index is 0, that is, there is ony one camera. 
+$ python test-ucf24.py --id_cam=0
+```
+  * The typical result of camera version is as the following figure.
+  
+  ![fps_gpu](./img/cam_gpu.PNG)
+
+
+---
+## Original author's (gurkirt) README
 An implementation of our work ([Online Real-time Multiple Spatiotemporal Action Localisation and Prediction](https://arxiv.org/pdf/1611.08563.pdf)) published in ICCV 2017.
 
 Originally, we used [Caffe](https://github.com/weiliu89/caffe/tree/ssd) implementation of [SSD-V2](https://arxiv.org/abs/1512.02325)
