@@ -8,3 +8,4 @@ bbox_video/
 *.gif
 *.pth
 *.jpg
+*.mat
