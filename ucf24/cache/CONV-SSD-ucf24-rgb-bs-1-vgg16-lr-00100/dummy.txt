@@ -1,2 +1,0 @@
-CONV-SSD-ucf24-rgb-bs-1-vgg16-lr-00100
-./ucf24/cache/CONV-SSD-ucf24-rgb-bs-1-vgg16-lr-00100/rgb-ssd300_ucf24_120000.pth
