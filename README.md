@@ -7,7 +7,7 @@ My environmnet was
 
   * Python : 3.5.3
 
-  * PyTroch : 0.3.0.post4
+  * PyTorch : 0.3.0.post4
 
   * cv2 : 3.2.0
   
