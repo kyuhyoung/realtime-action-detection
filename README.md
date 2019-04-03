@@ -15,7 +15,7 @@ My environmnet was
 
 The command line script for GPU + still image version was
 ```Shell
-# Under the assmuption that 'ucf24' folder should exist in this directory. 
+# Under the assmuption that 'ucf24' folder exists in this directory. 
 $ python test-ucf24.py
 ```
   * The typical result of still image version is as the following figure.
@@ -25,7 +25,7 @@ $ python test-ucf24.py
 
 The command line script for GPU + cam version was
 ```Shell
-# Under the assmuption that 'ucf24' folder should exist in this directory and the the camera index is 0, that is, there is ony one camera. 
+# Under the assmuption that 'ucf24' folder exists in this directory and the the camera index is 0, that is, there is ony one camera. 
 $ python test-ucf24.py --id_cam=0
 ```
   * The typical result of camera version is as the following figure.
