@@ -19,7 +19,8 @@ from torch.autograd import Variable
 from data import AnnotationTransform, UCF24Detection, BaseTransform, CLASSES, detection_collate, v2
 import torch.utils.data as data
 from utils.evaluation import evaluate_detections
-from util import DataClass, fetch_in_thread, display_in_thread, detect_in_thread, init_cam, init_ssd
+from layers.box_utils import decode
+from util import DataClass, fetch_in_thread, display_in_thread, detect_in_thread, init_cam, init_ssd, mark_detections, Y_OFFSET_GT_BOX
 
 from threading import Thread
 
@@ -163,6 +164,7 @@ def test_net(net, save_root, exp_name, input_type, dataset, iteration, li_color_
     shall_record = n_record_per_class > 0
     th_conf = args.conf_thresh
     th_nms = args.nms_thresh
+    top_k = args.topk
     t3 = np.asarray(means_bgr)
     means_rgb = np.flipud(t3)
     #means_rgb_2 = np.fliplr(t3)
@@ -272,7 +274,7 @@ def test_net(net, save_root, exp_name, input_type, dataset, iteration, li_color_
             decoded_boxes = decode(loc_data[b].data, prior_data.data, cfg['variance']).clone()
             conf_scores = net.softmax(conf_preds[b]).data.clone()    
             
-            t3_bgr, det_boxes = mark_detections(t3_bgr, conf_scores, dataset.CLASSES, decoded_boxes, (width, height), li_margin_ratio_l_r_t_b, li_color_class, th_conf, th_nms, det_boxes)
+            t3_bgr, det_boxes = mark_detections(t3_bgr, conf_scores, dataset.CLASSES, decoded_boxes, (width, height), li_margin_ratio_l_r_t_b, li_color_class, top_k, th_conf, th_nms, det_boxes)
 
             #index = img_indexs[b]
             annot_info = image_ids[img_idx]
