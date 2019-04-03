@@ -20,6 +20,7 @@ import torch
 from torch.autograd import Variable
 from ssd import build_ssd
 from layers.box_utils import decode, nms
+from data import base_transform
 
 import datetime
 import cv2
@@ -589,6 +590,7 @@ def detect_in_thread(class_data_proxy, num_classes, trained_model_path, use_cuda
     is_huda = False
     while not class_data_proxy.get_eoc():
         batch_rgb = class_data_proxy.get_batch_rgb()
+        #print('batch_rgb.shape : ', batch_rgb.shape)
         if batch_rgb is None:
             print('batch_rgb is None !!!'); #exit()
             if is_huda:
@@ -616,6 +618,7 @@ def detect_in_thread(class_data_proxy, num_classes, trained_model_path, use_cuda
     #return class_data_proxy
 
 
+
 def resize_and_fill(im_rgb, color_rgb, w_h_desired):
     w_desired, h_desired = w_h_desired
     h_old, w_old = im_rgb.shape[:2]
@@ -639,16 +642,19 @@ def resize_and_fill(im_rgb, color_rgb, w_h_desired):
 
 
 def im2batch(im_bgr, means_bgr, w_h_net, use_cuda):
-    #print('im_bgr.shape : ', im_bgr.shape)
+   
+    '''
     im_bgr_resized = resize_and_fill(im_bgr, means_bgr, w_h_net)
-    #cv2.imshow('im_bgr', im_bgr);   cv2.imshow('im_bgr_resized', im_bgr_resized);   cv2.waitKey();  exit()
     im_bgr_norm_resized = im_bgr_resized - means_bgr
     '''
-    im_bgr_norm = im_bgr - means_bgr
-    im_bgr_norm_resized = resize_and_fill(im_bgr_norm, (0, 0, 0), w_net, h_net)
-    '''
-    im_rgb_norm_resized = im_bgr_norm_resized.transpose((2, 0, 1))
-    ts_rgb_norm = torch.from_numpy(im_rgb_norm_resized).float()
+    im_bgr_norm_resized = base_transform(im_bgr, w_h_net[0], means_bgr)
+    im_rgb_norm_resized = cv2.cvtColor(im_bgr_norm_resized, cv2.COLOR_BGR2RGB)
+
+    #im_rgb_norm_resized = im_rgb_norm_resized.transpose((2, 0, 1))   
+    #ts_rgb_norm = torch.from_numpy(im_rgb_norm_resized).float()
+
+    ts_rgb_norm = torch.from_numpy(im_rgb_norm_resized.transpose(2, 0, 1)).float()
+    
     batch_rgb = ts_rgb_norm.unsqueeze(0)
     #if args.cuda:
     if use_cuda:
@@ -704,6 +710,9 @@ def fetch_in_thread(class_data_proxy, kam, means_bgr, w_h_net, use_cuda):
             is_huda = True
             #cv2.imshow("temp", im_bgr); cv2.waitKey(10000)
             #im_rgb = cv2.cvtColor(im_bgr, cv2.COLOR_BGR2RGB)
+
+            #im_bgr = cv2.imread('./ucf24/rgb-images/LongJump/v_LongJump_g06_c01/00037.jpg')
+            #im_bgr = cv2.cvtColor(im_bgr, cv2.COLOR_BGR2RGB)
             class_data_proxy.set_bgr(im_bgr)
             batch_rgb = im2batch(im_bgr, means_bgr, w_h_net, use_cuda)
             class_data_proxy.set_batch_rgb(batch_rgb)

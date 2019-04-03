@@ -203,7 +203,7 @@ def test_net(net, save_root, exp_name, input_type, dataset, iteration, li_color_
         writer = make_video_recorder(fn_record, (300, 300), 20)
     shall_stop = False
     for val_itr in range(len(val_data_loader)):
-        print('val_itr : {} / {}'.format(val_itr, len(val_data_loader)))
+        print('\nval_itr : {} / {}'.format(val_itr, len(val_data_loader)))
         if not batch_iterator:
             batch_iterator = iter(val_data_loader)
         torch.cuda.synchronize()
@@ -232,7 +232,8 @@ def test_net(net, save_root, exp_name, input_type, dataset, iteration, li_color_
         if args.cuda:
             images_rgb = Variable(images_rgb.cuda(), volatile=True)
             #exit()
-########    networking forwarding #######################################################
+        #print('images_rgb.shape : ', images_rgb.shape)
+########    networking forwarding ######################################################        
         output = net(images_rgb)
 ######################################################################################
         loc_data = output[0]
@@ -249,8 +250,17 @@ def test_net(net, save_root, exp_name, input_type, dataset, iteration, li_color_
             #print('b : {} / {}'.format(b, batch_size)) 
             img_idx = img_indexs[b]
             annot_info = dataset.ids[img_idx]
+            #print('annot_info : ', annot_info)
             video_id = annot_info[0]
-            video_name = dataset.video_list[video_id].split("/")[0]
+            frame_num = annot_info[1]
+
+            #print('video_id : ', video_id)
+            video_name = dataset.video_list[video_id]
+            video_class = video_name.split("/")[0]
+            img_name = dataset._imgpath + '/{:s}/{:05d}.jpg'.format(video_name, frame_num)
+            #print('video_name : ', video_name)
+            #print('video_class : ', video_class)
+            print('img_name : ', img_name)
             
             #t1_rgb = np.transpose(images_rgb[b].cpu().numpy(), (1, 2, 0))
             #exit()
@@ -265,8 +275,8 @@ def test_net(net, save_root, exp_name, input_type, dataset, iteration, li_color_
             gt[:, 3] *= height
             #print('type(gt) : ', type(gt)); exit()
             #cv2.putText(t3_bgr, video_name, (60, 20), cv2.FONT_HERSHEY_DUPLEX, 0.6, (0, 0, 255))
-            id_vid = dataset.CLASSES.index(video_name)
-            cv2.putText(t3_bgr, video_name, (X_OFFSET_GT_VID, Y_OFFSET_GT_VID), cv2.FONT_HERSHEY_DUPLEX, FONT_SCALE_GT_VID, li_color_class[id_vid])
+            id_vid = dataset.CLASSES.index(video_class)
+            cv2.putText(t3_bgr, video_class, (X_OFFSET_GT_VID, Y_OFFSET_GT_VID), cv2.FONT_HERSHEY_DUPLEX, FONT_SCALE_GT_VID, li_color_class[id_vid])
             
             cv2.putText(t3_bgr, "conf. thres. : {:.2f}".format(th_conf), (int(width * 0.5 - 85), int(height - 10)), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 255))
             
@@ -299,8 +309,10 @@ def test_net(net, save_root, exp_name, input_type, dataset, iteration, li_color_
             #cv2.waitKey(1)
             k = cv2.waitKey() & 0xFF
             #k = cv2.waitKey(1)
+            '''
             if 255 != k:
                 print('k : ', k)
+            '''
             if 27 == k:
                 shall_stop = True
         if val_itr % val_step == 0:
