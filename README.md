@@ -13,7 +13,7 @@ My environmnet was
   
   * Titax X (Pascal)  
 
-The command line script for GPU + still image version was
+The command line script for GPU + still image version (original author's version) was
 ```Shell
 # Under the assmuption that 'ucf24' folder exists in this directory. 
 $ python test-ucf24.py
